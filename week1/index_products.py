@@ -50,7 +50,6 @@ mappings = [
     "longDescription/text()", "longDescription",
     "longDescriptionHtml/text()", "longDescriptionHtml",
     "features/*/text()", "features"  # Note the match all here to get the subfields
-
 ]
 
 
@@ -58,9 +57,19 @@ def get_opensearch():
     host = 'localhost'
     port = 9200
     auth = ('admin', 'admin')
-
+    index_name = "search_fun_week1_bbuy"
     #### Step 2.a: Create a connection to OpenSearch
-    client = None
+    client = OpenSearch(
+        hosts = [{'host': host, 'port': port}],
+        http_compress = True, # enables gzip compression for request bodies
+        http_auth = auth,
+        # client_cert = client_cert_path,
+        # client_key = client_key_path,
+        use_ssl = True,
+        verify_certs = False,
+        ssl_assert_hostname = False,
+        ssl_show_warn = False,
+    )
     return client
 
 
@@ -69,8 +78,8 @@ def get_opensearch():
 @click.option('--index_name', '-i', default="bbuy_products", help="The name of the index to write to")
 def main(source_dir: str, index_name: str):
     client = get_opensearch()
-    # To test on a smaller set of documents, change this glob to be more restrictive than *.xml
-    files = glob.glob(source_dir + "/*.xml")
+    #To test on a smaller set of documents, change this glob to be more restrictive than *.xml
+    files = glob.glob(source_dir + "/products_0001_2570_to_430420.xml")
     docs_indexed = 0
     tic = time.perf_counter()
     for file in files:
@@ -85,13 +94,22 @@ def main(source_dir: str, index_name: str):
                 xpath_expr = mappings[idx]
                 key = mappings[idx + 1]
                 doc[key] = child.xpath(xpath_expr)
-            # print(doc)
             if not 'productId' in doc or len(doc['productId']) == 0:
                 continue
-
+        
             #### Step 2.b: Create a valid OpenSearch Doc and bulk index 2000 docs at a time
-            the_doc = None
+            the_doc = {'_index':index_name,'_source':doc}
             docs.append(the_doc)
+            if len(docs) % 2000 == 0:
+                bulk(client, docs)
+                docs=[]
+                docs_indexed=docs_indexed+2000
+                # print(client.cat.count(index_name, params={"v": "true"}))
+        if len(docs)>0:
+            bulk(client, docs)
+            docs_indexed=docs_indexed+len(docs)
+            # print(client.cat.count(index_name, params={"v": "true"}))
+        
     toc = time.perf_counter()
     logger.info(f'Done. Total docs: {docs_indexed}.  Total time: {((toc - tic) / 60):0.3f} mins.')
 

@@ -72,7 +72,6 @@ def get_opensearch():
     )
     return client
 
-
 @click.command()
 @click.option('--source_dir', '-s', help='XML files source directory')
 @click.option('--index_name', '-i', default="bbuy_products", help="The name of the index to write to")
@@ -80,6 +79,9 @@ def main(source_dir: str, index_name: str):
     client = get_opensearch()
     #To test on a smaller set of documents, change this glob to be more restrictive than *.xml
     files = glob.glob(source_dir + "/products_0001_2570_to_430420.xml")
+    # files = glob.glob(source_dir + "/products_00*.xml")
+    # files = glob.glob(source_dir + "/*.xml")
+
     docs_indexed = 0
     tic = time.perf_counter()
     for file in files:

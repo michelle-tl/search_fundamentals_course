@@ -112,6 +112,11 @@ def query():
 
 def create_query(user_query, filters, sort="_score", sortDir="desc"):
     print("Query: {} Filters: {} Sort: {}".format(user_query, filters, sort))
+    sort_obj = {}
+    sort_obj[sort] = {
+        "order": sortDir
+    }
+
     query_obj = {
         # TODO
         'size': 5,
@@ -128,25 +133,30 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
                 "filter": filters
             }
         },
-        "sort": sort,
+        "sort": sort_obj,
         'aggs': {
             "regularPrice": {
                 "range": {
                     "field": "regularPrice",
                     "ranges": [
                         {
-                            "key": "$ -5",
+                            "key": "$ -100",
                             "from": 0,
-                            "to": 5
+                            "to": 100
                         },
                         {
-                            "key": "$$ 5-20",
-                            "from": 5,
-                            "to": 20
+                            "key": "$$ 100-200",
+                            "from": 100,
+                            "to": 200
                         },
                         {
-                            "key": "$$$ 20-",
-                            "from": 20
+                            "key": "$$$ 200-300",
+                            "from": 200,
+                            "to": 300
+                        },
+                        {
+                            "key": "$$$$ 300-",
+                            "from": 300,
                         }
                     ]
                 }

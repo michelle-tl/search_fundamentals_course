@@ -57,7 +57,6 @@ def get_opensearch():
     host = 'localhost'
     port = 9200
     auth = ('admin', 'admin')
-    index_name = "search_fun_week1_bbuy"
     #### Step 2.a: Create a connection to OpenSearch
     client = OpenSearch(
         hosts = [{'host': host, 'port': port}],
@@ -100,7 +99,7 @@ def main(source_dir: str, index_name: str):
                 continue
         
             #### Step 2.b: Create a valid OpenSearch Doc and bulk index 2000 docs at a time
-            the_doc = {'_index':index_name,'_source':doc}
+            the_doc = {'_index':index_name,'_source':doc, '_id': doc["productId"][0] }
             docs.append(the_doc)
             if len(docs) % 2000 == 0:
                 bulk(client, docs)

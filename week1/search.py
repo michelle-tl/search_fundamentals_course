@@ -171,7 +171,7 @@ def create_query(user_query, filters, sort="_score", sortDir="desc"):
             ,
             "missing_images": {
                 "missing": {
-                    "field": "images.keyword"
+                    "field": "image.keyword"
                 }
             }
         },

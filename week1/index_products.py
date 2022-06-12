@@ -77,9 +77,9 @@ def get_opensearch():
 def main(source_dir: str, index_name: str):
     client = get_opensearch()
     #To test on a smaller set of documents, change this glob to be more restrictive than *.xml
-    files = glob.glob(source_dir + "/products_0001_2570_to_430420.xml")
+    # files = glob.glob(source_dir + "/products_0001_2570_to_430420.xml")
     # files = glob.glob(source_dir + "/products_00*.xml")
-    # files = glob.glob(source_dir + "/*.xml")
+    files = glob.glob(source_dir + "/*.xml")
 
     docs_indexed = 0
     tic = time.perf_counter()
@@ -99,17 +99,15 @@ def main(source_dir: str, index_name: str):
                 continue
         
             #### Step 2.b: Create a valid OpenSearch Doc and bulk index 2000 docs at a time
-            the_doc = {'_index':index_name,'_source':doc, '_id': doc["productId"][0] }
+            the_doc = {'_index':index_name,'_source':doc, '_id': doc["sku"][0] }
             docs.append(the_doc)
             if len(docs) % 2000 == 0:
-                bulk(client, docs)
+                bulk(client, docs, request_timeout=60)
+                docs_indexed+=len(docs)
                 docs=[]
-                docs_indexed=docs_indexed+2000
-                # print(client.cat.count(index_name, params={"v": "true"}))
         if len(docs)>0:
-            bulk(client, docs)
-            docs_indexed=docs_indexed+len(docs)
-            # print(client.cat.count(index_name, params={"v": "true"}))
+            bulk(client, docs, request_timeout=60)
+            docs_indexed+=len(docs)
         
     toc = time.perf_counter()
     logger.info(f'Done. Total docs: {docs_indexed}.  Total time: {((toc - tic) / 60):0.3f} mins.')

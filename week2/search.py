@@ -78,7 +78,7 @@ def autocomplete():
                 }
             }
 
-            index_name = "bbuy_queries" if type == "queries" else "products"
+            index_name = "bbuy_queries" if type == "queries" else "bbuy_products"
             search_response = opensearch.search(
                     body=query_obj,
                     index=index_name

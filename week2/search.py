@@ -78,11 +78,11 @@ def autocomplete():
                 }
             }
 
-            index_name = "bbuy_queries" if type === "queris" else "bbuy_products"
+            index_name = "bbuy_queries" if type == "queries" else "products"
             search_response = opensearch.search(
                     body=query_obj,
                     index=index_name
-            ) 
+            )
 
             if (search_response and search_response['suggest']['autocomplete'] and search_response['suggest']['autocomplete'][0]['length'] > 0): # just a query response
                 results = search_response['suggest']['autocomplete'][0]['options']
